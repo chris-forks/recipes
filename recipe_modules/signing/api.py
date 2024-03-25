@@ -72,8 +72,8 @@ class CodeSignApi(recipe_api.RecipeApi):
     with self.m.step.nest('Setup codesign environment'):
       secrets_dict = {
           'FLUTTER_P12':
-              'flutter_p12.encrypted', 'FLUTTER_P12_PASSWORD':
-                  'p12_password.encrypted', 'CODESIGN_TEAM_ID':
+              'exported_p12.encrypted', 'FLUTTER_P12_PASSWORD':
+                  '0325_p12password.encrypted', 'CODESIGN_TEAM_ID':
                       'codesign_team_id.encrypted',
           'CODESIGN_APP_SPECIFIC_PASSWORD':
               'codesign_app_specific_password.encrypted',

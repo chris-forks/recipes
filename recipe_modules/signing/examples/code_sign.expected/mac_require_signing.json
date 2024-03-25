@@ -81,8 +81,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "gs://flutter_configs/flutter_p12.encrypted",
-      "[CLEANUP]/flutter_p12.encrypted"
+      "gs://flutter_configs/exported_p12.encrypted",
+      "[CLEANUP]/exported_p12.encrypted"
     ],
     "infra_step": true,
     "name": "Setup codesign environment.gsutil download",
@@ -95,7 +95,7 @@
       "[START_DIR]/cloudkms/cloudkms",
       "decrypt",
       "-input",
-      "[CLEANUP]/flutter_p12.encrypted",
+      "[CLEANUP]/exported_p12.encrypted",
       "-output",
       "[CLEANUP]/FLUTTER_P12",
       "projects/flutter-infra-staging/locations/global/keyRings/luci/cryptoKeys/flutter-infra"
@@ -143,8 +143,8 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "gs://flutter_configs/p12_password.encrypted",
-      "[CLEANUP]/p12_password.encrypted"
+      "gs://flutter_configs/0325_p12password.encrypted",
+      "[CLEANUP]/0325_p12password.encrypted"
     ],
     "infra_step": true,
     "name": "Setup codesign environment.gsutil download (2)",
@@ -157,7 +157,7 @@
       "[START_DIR]/cloudkms/cloudkms",
       "decrypt",
       "-input",
-      "[CLEANUP]/p12_password.encrypted",
+      "[CLEANUP]/0325_p12password.encrypted",
       "-output",
       "[CLEANUP]/FLUTTER_P12_PASSWORD",
       "projects/flutter-infra-staging/locations/global/keyRings/luci/cryptoKeys/flutter-infra"
