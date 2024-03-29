@@ -47,8 +47,8 @@ sleep_time=2
 while [ $attempt -lt 3 ]; do
    echo "attempt #$attempt"
    /usr/bin/security import $P12_SUFFIX_FILEPATH -k build.keychain -P $RAW_PASSWORD -T $CODESIGN_PATH -T /usr/bin/codesign
-   /usr/bin/security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' build.keychain
-   $IDENTITY_OUTPUT=$(/usr/bin/security find-identity -v build.keychain)
+   /usr/bin/security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' build.keychain >/dev/null 2>&1
+   IDENTITY_OUTPUT=$(/usr/bin/security find-identity -v build.keychain)
    echo "$IDENTITY_OUTPUT"
    if echo "$IDENTITY_OUTPUT" | grep 'FLUTTER.IO LLC'; then
      exit 0
