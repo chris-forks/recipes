@@ -32,8 +32,12 @@ echo "User keychains on this machine: ${keychainNames[@]}";
 # Add keychain name to search list. (FML, took me 5 days to hunt this down)
 /usr/bin/security -v list-keychains -s "${keychainNames[@]}" build.keychain
 
+echo "about to set build.keychain as default"
+
 # Set build.keychain as default.
 /usr/bin/security default-keychain -s build.keychain
+
+echo "about to unlock build.keychain"
 
 # Unlock build.keychain to allow sign commands to use its certs.
 /usr/bin/security unlock-keychain -p '' build.keychain
@@ -41,13 +45,18 @@ echo "User keychains on this machine: ${keychainNames[@]}";
 attempt=0
 sleep_time=2
 while [ $attempt -lt 3 ]; do
+   echo "attempt #$attempt"
    /usr/bin/security import $P12_SUFFIX_FILEPATH -k build.keychain -P $RAW_PASSWORD -T $CODESIGN_PATH -T /usr/bin/codesign
    /usr/bin/security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' build.keychain
-   if /usr/bin/security find-identity -v build.keychain | grep 'FLUTTER.IO LLC'; then
+   $IDENTITY_OUTPUT=$(/usr/bin/security find-identity -v build.keychain)
+   echo "$IDENTITY_OUTPUT"
+   if echo "$IDENTITY_OUTPUT" | grep 'FLUTTER.IO LLC'; then
      exit 0
    fi
    sleep $sleep_time
    attempt=$(( attempt + 1 ))
    sleep_time=$(( sleep_time * sleep_time ))
 done
+
+echo "exhausted retries, exiting 1"
 exit 1

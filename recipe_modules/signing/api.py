@@ -110,7 +110,6 @@ class CodeSignApi(recipe_api.RecipeApi):
     with self.m.context(env=env, env_prefixes=env_prefixes):
       self.m.step(
           'run keychain setup script', [resource_name],
-          stdout=self.m.raw_io.output_text()
       )
 
   def _signer_tasks(self, env, env_prefixes, files_to_sign):
