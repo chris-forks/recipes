@@ -1,4 +1,4 @@
-//#!/usr/bin/env dart
+#!/usr/bin/env dart
 
 // Helper script to import a flutter p12 identity.
 
@@ -39,8 +39,14 @@ Future<int> innerMain({
   required void Function(String) log,
 }) async {
   String security(List<String> args) {
+    log('Executing ${<String>['/usr/bin/security', ...args]}');
+
     final io.ProcessResult result =
         io.Process.runSync('/usr/bin/security', args);
+
+    log('process finished with exitCode ${result.exitCode}');
+    log('STDOUT:\n\n${result.stdout}');
+    log('STDERR:\n\n${result.stderr}');
 
     if (result.exitCode != 0) {
       throw io.ProcessException(
