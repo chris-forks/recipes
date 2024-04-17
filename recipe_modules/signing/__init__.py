@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'depot_tools/gsutil',
     'flutter/flutter_deps',
     'flutter/kms',
     'flutter/zip',

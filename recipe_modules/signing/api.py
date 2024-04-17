@@ -85,9 +85,9 @@ class CodeSignApi(recipe_api.RecipeApi):
 
   def _keychain_setup(self, env, env_prefixes):
     """KeychainSetup sets up keychain for codesign.
-    
+
     This function triggers a shell script that creates a keychain named
-    build.keychain. It unlocks the keychain, 
+    build.keychain. It unlocks the keychain,
     adds keychain to codesign search list, and adds flutter .p12
     to this keychain. This script also supplies p12 password,
     and grants codesign cipd and system codesign the correct access controls.
@@ -107,11 +107,20 @@ class CodeSignApi(recipe_api.RecipeApi):
     # Only filepath with a .p12 suffix will be recognized.
     p12_suffix_filepath = self.m.path['cleanup'].join('flutter.p12')
     env['P12_SUFFIX_FILEPATH'] = p12_suffix_filepath
+    setup_keychain_log_file = self.m.path['cleanup'].join('setup_keychain_logs.txt')
+
+    env['SETUP_KEYCHAIN_LOG'] = setup_keychain_log_file
     with self.m.context(env=env, env_prefixes=env_prefixes):
-      self.m.step(
-          'run keychain setup script', [resource_name],
-          stdout=self.m.raw_io.output_text()
-      )
+      try:
+          self.m.step(
+              'run keychain setup script', [resource_name],
+              stdout=self.m.raw_io.output_text()
+          )
+      finally:
+          self.m.gsutil.upload(
+              bucket='',
+          )
+
 
   def _signer_tasks(self, env, env_prefixes, files_to_sign):
     """Concurrently creates jobs to codesign each binary.
