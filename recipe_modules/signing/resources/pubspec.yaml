@@ -1,9 +1,0 @@
-name: setup_keychain
-description: 'Flutter CI tool for importing a cert to a macOS keychain.'
-publish_to: none
-
-environment:
-  sdk: '^3.3.0'
-
-dev_dependencies:
-  test: any
