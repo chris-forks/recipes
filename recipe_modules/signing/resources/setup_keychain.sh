@@ -1,62 +1,146 @@
-#!/bin/bash
+#!/usr/bin/env dart
 
-# Helper script to import a flutter p12 identity.
-# Note: do not enable -x to display expanded values of the variables, as this will leak the passwords.
-set -e
+// Helper script to import a flutter p12 identity.
 
-RAW_PASSWORD=$(cat $FLUTTER_P12_PASSWORD)
-# Only filepath with a .p12 suffix will be recognized
-mv $FLUTTER_P12 $P12_SUFFIX_FILEPATH
+import 'dart:io' as io;
 
-# Delete build.keychain if it exists, do no-op if not exist.
-if /usr/bin/security delete-keychain build.keychain; then
-  :
-fi
-# Create build.keychain.
-/usr/bin/security create-keychain -p '' build.keychain
+const String keychainName = 'build.keychain';
+const String keychainPassword = '';
+const int totalRetryAttempts = 3;
 
-# Retrieve current list of keychains on the search list of current machine.
-keychains=$(security list-keychains -d user)
+Future<void> main() async {
+  final io.File logFile = io.File(io.Platform.environment['SETUP_KEYCHAIN_LOGS_PATH']!);
+  final logSink = logFile.openWrite();
+  void log(String line) {
+    logSink.writeln('$line\n');
+  }
 
-keychainNames=();
+  int exitCode = 1;
+  try {
+    exitCode = await innerMain(
+      passwordPath: io.Platform.environment['FLUTTER_P12_PASSWORD']!,
+      flutterP12Path: io.Platform.environment['FLUTTER_P12']!,
+      p12SuffixFilePath: io.Platform.environment['P12_SUFFIX_FILEPATH']!,
+      codesignPath: io.Platform.environment['CODESIGN_PATH']!,
+      log: log,
+    );
+  } finally {
+    await logSink.flush();
+    await logSink.close();
+  }
+  io.exit(exitCode);
+}
 
-for keychain in $keychains
-do
-  basename=$(basename "$keychain")
-  keychainName=${basename::${#basename}-4}
-  keychainNames+=("$keychainName")
-done
+Future<int> innerMain({
+  required String passwordPath,
+  required String flutterP12Path,
+  required String p12SuffixFilePath,
+  required String codesignPath,
+  required void Function(String) log,
+}) async {
+  String security(List<String> args) {
+    log('Executing ${<String>['/usr/bin/security', ...args]}');
 
-echo "User keychains on this machine: ${keychainNames[@]}";
+    final io.ProcessResult result =
+        io.Process.runSync('/usr/bin/security', args);
 
-# Add keychain name to search list. (FML, took me 5 days to hunt this down)
-/usr/bin/security -v list-keychains -s "${keychainNames[@]}" build.keychain
+    log('process finished with exitCode ${result.exitCode}');
+    log('STDOUT:\n\n${result.stdout}');
+    log('STDERR:\n\n${result.stderr}');
 
-echo "about to set build.keychain as default"
+    if (result.exitCode != 0) {
+      throw io.ProcessException(
+          '/usr/bin/security', args, 'failed', result.exitCode);
+    }
 
-# Set build.keychain as default.
-/usr/bin/security default-keychain -s build.keychain
+    return result.stdout as String;
+  }
 
-echo "about to unlock build.keychain"
+  final String rawPassword = io.File(passwordPath).readAsStringSync();
 
-# Unlock build.keychain to allow sign commands to use its certs.
-/usr/bin/security unlock-keychain -p '' build.keychain
+  // Only filepath with a .p12 suffix will be recognized
+  io.File(flutterP12Path).renameSync(p12SuffixFilePath);
 
-attempt=0
-sleep_time=2
-while [ $attempt -lt 3 ]; do
-   echo "attempt #$attempt"
-   /usr/bin/security import $P12_SUFFIX_FILEPATH -k build.keychain -P $RAW_PASSWORD -T $CODESIGN_PATH -T /usr/bin/codesign
-   /usr/bin/security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' build.keychain >/dev/null 2>&1
-   IDENTITY_OUTPUT=$(/usr/bin/security find-identity -v build.keychain)
-   echo "$IDENTITY_OUTPUT"
-   if echo "$IDENTITY_OUTPUT" | grep 'FLUTTER.IO LLC'; then
-     exit 0
-   fi
-   sleep $sleep_time
-   attempt=$(( attempt + 1 ))
-   sleep_time=$(( sleep_time * sleep_time ))
-done
+  // Delete build.keychain if it exists
+  security(const <String>['delete-keychain', keychainName]);
 
-echo "exhausted retries, exiting 1"
-exit 1
+  // Create keychain.
+  security(const <String>[
+    'create-keychain',
+    '-p',
+    keychainPassword,
+    keychainName,
+  ]);
+
+  // Retrieve current list of keychains on the search list of current machine.
+  final keychains = security(const <String>['list-keychains', '-d', 'user'])
+      .split('\n')
+      .map<String?>((String line) {
+    final RegExp pattern = RegExp(r'^\s*".*\/([a-zA-Z0-9.]+)-db"');
+    final RegExpMatch? match = pattern.firstMatch(line);
+    if (match == null) {
+      return null;
+    }
+    // The first (and only) capture group is the name of the keychain
+    return match.group(1);
+  }).whereType<String>();
+
+  print('User keychains on this machine: $keychains');
+
+  // Add keychain name to search list.
+  // Without this, future commands such as `security import`,
+  // `security find-identity` and `codesign ...` will fail to find the cert
+  // in our newly created keychain.
+  security(<String>[
+    '-v',
+    'list-keychains',
+    // TODO(fujino): we probably don't need $keychains here, only keychainName should be required
+    '-s', ...keychains, keychainName,
+  ]);
+
+  // Set $keychainName as default.
+  security(<String>[
+    'default-keychain',
+    '-s',
+    keychainName,
+  ]);
+
+  // Unlock keychainName to allow sign commands to use its certs.
+  security(<String>['unlock-keychain', '-p', keychainPassword, keychainName]);
+
+  // This will be exponentially increased on retries
+  int sleepSeconds = 2;
+
+  for (int attempt = 0; attempt < totalRetryAttempts; attempt++) {
+    security(<String>[
+      'import',
+      p12SuffixFilePath,
+      '-k', keychainName,
+      '-P', rawPassword,
+      // -T allows the specified program to access this identity
+      '-T', codesignPath,
+      '-T', '/usr/bin/codesign',
+    ]);
+    security(<String>[
+      'set-key-partition-list',
+      '-S',
+      'apple-tool:,apple:,codesign:',
+      '-s',
+      '-k',
+      '',
+      keychainName,
+    ]);
+
+    final String identities =
+        security(const <String>['find-identity', '-v', keychainName]);
+    if (identities.contains('FLUTTER.IO LLC')) {
+      log('successfully found a Flutter identity in the $keychainName keychain');
+      return 0;
+    }
+    log('failed to find a Flutter identity in the $keychainName keychain on attempt $attempt');
+    await Future<void>.delayed(Duration(seconds: sleepSeconds));
+    sleepSeconds *= sleepSeconds;
+  }
+  log('failed to find a Flutter identity after $totalRetryAttempts attempts.');
+  return 1;
+}
