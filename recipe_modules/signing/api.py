@@ -117,10 +117,14 @@ class CodeSignApi(recipe_api.RecipeApi):
           )
       finally:
           # This will namespace the remote GCS path by the buildbucket build ID
-          self.m.gsutil.upload_namespaced_file(
-              setup_keychain_log_file, # source
-              'flutter_tmp_logs', # bucket
-              'setup_keychain_logs.txt', # subpath
+          buildbucket_id = self.m.buildbucket_util.id
+          remote_path = '%s/setup_keychain_logs.txt' % buildbucket_id
+          self.m.gsutil.upload(
+              bucket='flutter_tmp_logs',
+              source=setup_keychain_log_file,
+              dest=remote_path,
+              args=['-r'],
+              name='upload debug logs to %s' % remote_path
           )
 
   def _signer_tasks(self, env, env_prefixes, files_to_sign):

@@ -149,12 +149,12 @@ def RunSteps(api):
             _run_global_generators(
                 api, generators, full_engine_checkout, env, env_prefixes
             )
-            _archive(api, archives, full_engine_checkout)
+            _archive(api, archives, full_engine_checkout, env, env_prefixes)
         else:
           _run_global_generators(
               api, generators, full_engine_checkout, env, env_prefixes
           )
-          _archive(api, archives, full_engine_checkout)
+          _archive(api, archives, full_engine_checkout, env, env_prefixes)
 
   # Run tests
   if not api.flutter_bcid.is_official_build():
@@ -173,7 +173,7 @@ def RunSteps(api):
     )
 
 
-def _archive(api, archives, full_engine_checkout):
+def _archive(api, archives, full_engine_checkout, env, env_prefixes):
   """Proces global archives.
 
   Args:
@@ -207,7 +207,8 @@ def _archive(api, archives, full_engine_checkout):
         for path in files_to_archive
         if api.signing.requires_signing(path.local)
     ]
-    api.signing.code_sign(signing_paths)
+    with api.context(env=env, env_prefixes=env_prefixes):
+      api.signing.code_sign(signing_paths)
   for archive in files_to_archive:
     api.archives.upload_artifact(archive.local, archive.remote)
     api.flutter_bcid.upload_provenance(archive.local, archive.remote)

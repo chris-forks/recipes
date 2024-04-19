@@ -4708,168 +4708,17 @@
     "name": "run keychain setup script"
   },
   {
-    "cmd": [],
-    "name": "install infra/3pp/tools/gsutil"
-  },
-  {
     "cmd": [
-      "vpython3",
+      "python3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[START_DIR]/cipd_tool/infra/3pp/tools/gsutil/b4b219a8941171148883e671bbc50247a15c06d7bae1e2ad831ef38fbb8831f3"
-    ],
-    "cwd": "[CACHE]/builder/src/flutter",
-    "env": {
-      "ANDROID_HOME": "[CACHE]/builder/src/third_party/android_tools/sdk",
-      "ANDROID_SDK_HOME": "[CLEANUP]/tmp_tmp_1",
-      "ANDROID_USER_HOME": "[CLEANUP]/tmp_tmp_1/.android",
-      "CODESIGN_APP_SPECIFIC_PASSWORD": "[CLEANUP]/CODESIGN_APP_SPECIFIC_PASSWORD",
-      "CODESIGN_APP_STORE_ID": "[CLEANUP]/CODESIGN_APP_STORE_ID",
-      "CODESIGN_PATH": "[CLEANUP]/tmp_tmp_3/codesign",
-      "CODESIGN_TEAM_ID": "[CLEANUP]/CODESIGN_TEAM_ID",
-      "DEPOT_TOOLS": "RECIPE_REPO[depot_tools]",
-      "ENGINE_CHECKOUT_PATH": "[CACHE]/builder",
-      "ENGINE_PATH": "[CACHE]/builder",
-      "FLUTTER_P12": "[CLEANUP]/FLUTTER_P12",
-      "FLUTTER_P12_PASSWORD": "[CLEANUP]/FLUTTER_P12_PASSWORD",
-      "GIT_BRANCH": "",
-      "LUCI_BRANCH": "",
-      "LUCI_CI": "True",
-      "LUCI_CLEANUP": "[CLEANUP]",
-      "LUCI_PR": "",
-      "LUCI_WORKDIR": "[START_DIR]",
-      "OS": "darwin",
-      "P12_SUFFIX_FILEPATH": "[CLEANUP]/flutter.p12",
-      "REVISION": "abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd",
-      "SETUP_KEYCHAIN_LOGS_PATH": "[CLEANUP]/setup_keychain_logs.txt"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/src/third_party/dart/tools/sdks/dart-sdk/bin"
-      ]
-    },
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "flutter:prod"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "install infra/3pp/tools/gsutil.ensure package directory",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "cipd",
-      "ensure",
-      "-root",
-      "[START_DIR]/cipd_tool/infra/3pp/tools/gsutil/b4b219a8941171148883e671bbc50247a15c06d7bae1e2ad831ef38fbb8831f3",
-      "-ensure-file",
-      "infra/3pp/tools/gsutil/${platform} version:2@5.19",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "cwd": "[CACHE]/builder/src/flutter",
-    "env": {
-      "ANDROID_HOME": "[CACHE]/builder/src/third_party/android_tools/sdk",
-      "ANDROID_SDK_HOME": "[CLEANUP]/tmp_tmp_1",
-      "ANDROID_USER_HOME": "[CLEANUP]/tmp_tmp_1/.android",
-      "CODESIGN_APP_SPECIFIC_PASSWORD": "[CLEANUP]/CODESIGN_APP_SPECIFIC_PASSWORD",
-      "CODESIGN_APP_STORE_ID": "[CLEANUP]/CODESIGN_APP_STORE_ID",
-      "CODESIGN_PATH": "[CLEANUP]/tmp_tmp_3/codesign",
-      "CODESIGN_TEAM_ID": "[CLEANUP]/CODESIGN_TEAM_ID",
-      "DEPOT_TOOLS": "RECIPE_REPO[depot_tools]",
-      "ENGINE_CHECKOUT_PATH": "[CACHE]/builder",
-      "ENGINE_PATH": "[CACHE]/builder",
-      "FLUTTER_P12": "[CLEANUP]/FLUTTER_P12",
-      "FLUTTER_P12_PASSWORD": "[CLEANUP]/FLUTTER_P12_PASSWORD",
-      "GIT_BRANCH": "",
-      "LUCI_BRANCH": "",
-      "LUCI_CI": "True",
-      "LUCI_CLEANUP": "[CLEANUP]",
-      "LUCI_PR": "",
-      "LUCI_WORKDIR": "[START_DIR]",
-      "OS": "darwin",
-      "P12_SUFFIX_FILEPATH": "[CLEANUP]/flutter.p12",
-      "REVISION": "abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd",
-      "SETUP_KEYCHAIN_LOGS_PATH": "[CLEANUP]/setup_keychain_logs.txt"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/src/third_party/dart/tools/sdks/dart-sdk/bin"
-      ]
-    },
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "flutter:prod"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "install infra/3pp/tools/gsutil.ensure_installed",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-version:2@5.19--\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/3pp/tools/gsutil/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cipd_tool/infra/3pp/tools/gsutil/b4b219a8941171148883e671bbc50247a15c06d7bae1e2ad831ef38fbb8831f3/gsutil",
-      "-h",
-      "Custom-Time:2012-05-14T12:53:24.500000Z",
-      "-o",
-      "GSUtil:software_update_check_period=0",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
       "cp",
-      "-n",
+      "-r",
       "[CLEANUP]/setup_keychain_logs.txt",
-      "gs://flutter_tmp_logs/builds/8945511751514863184/setup_keychain_logs.txt"
+      "gs://flutter_tmp_logs/8945511751514863184/setup_keychain_logs.txt"
     ],
     "cwd": "[CACHE]/builder/src/flutter",
     "env": {
@@ -4922,9 +4771,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "upload setup_keychain_logs.txt to flutter_tmp_logs",
+    "name": "gsutil upload debug logs to 8945511751514863184/setup_keychain_logs.txt",
     "~followup_annotations": [
-      "@@@STEP_LINK@setup_keychain_logs.txt@https://storage.cloud.google.com/flutter_tmp_logs/builds/8945511751514863184/setup_keychain_logs.txt@@@"
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/flutter_tmp_logs/8945511751514863184/setup_keychain_logs.txt@@@"
     ]
   },
   {

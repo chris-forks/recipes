@@ -142,5 +142,10 @@ Future<int> innerMain({
     sleepSeconds *= sleepSeconds;
   }
   log('failed to find a Flutter identity after $totalRetryAttempts attempts.');
+  security(const <String>[
+    'find-certificate',
+    // Find all matching certificates, not just the first
+    '-a',
+  ]);
   return 1;
 }
