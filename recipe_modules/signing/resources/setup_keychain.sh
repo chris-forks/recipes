@@ -73,6 +73,22 @@ Future<int> innerMain({
       keychainName,
     ]);
 
+    // TODO(fujino): cache this via CIPD
+    final io.File g2CertFile = await _downloadFile(
+      remoteUri: Uri.parse('https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer'),
+      localPath: './DeveloperIDG2CA.cer',
+    );
+
+    // LOAD certificate authority into the build keychain
+    await security(<String>[
+      'import',
+      g2CertFile.absolute.path,
+      '-k', keychainName,
+      // -T allows the specified program to access this identity
+      '-T', codesignPath,
+      '-T', '/usr/bin/codesign',
+    ]);
+
     // Retrieve current list of keychains on the search list of current machine.
     final keychains = security(const <String>['list-keychains', '-d', 'user'])
         .split('\n')
@@ -98,6 +114,10 @@ Future<int> innerMain({
       // TODO(fujino): we probably don't need $keychains here, only keychainName should be required
       '-s', ...keychains, keychainName,
     ]);
+
+    // For diagnostic purposes, list keychains AFTER adding our newly created
+    // keychain to the search list.
+    security(const <String>['list-keychains', '-d', 'user']);
 
     // Set $keychainName as default.
     security(<String>[
@@ -151,4 +171,20 @@ Future<int> innerMain({
   }
   log('failed to find a Flutter identity after $totalRetryAttempts attempts.');
   return 1;
+}
+
+Future<io.File> _downloadFile({
+  required Uri remoteUri,
+  required String localPath,
+}) async {
+  final io.HttpClient client = io.HttpClient();
+
+  final io.HttpClientRequest request = await client.getUrl(remoteUri);
+  final io.HttpClientResponse response = await request.close();
+  final io.File g2CertFile = io.File(localPath);
+  final io.IOSink sink = g2CertFile.openWrite();
+  await response.pipe(sink);
+
+  client.close();
+  return g2CertFile;
 }
